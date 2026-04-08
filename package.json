@@ -1,0 +1,14 @@
+{
+  "name": "vpl-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install --prefix client && npm install --prefix server",
+    "dev": "concurrently \"npm run dev --prefix client\" \"npm run start --prefix server\"",
+    "start-server": "npm run start --prefix server",
+    "start-client": "npm run dev --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1"
+  }
+}

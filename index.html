@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Village Premier League</title>
+    <link rel="stylesheet" href="css/main.css">
+    <meta name="description" content="Official website of the Village Premier League (VPL) - Live scores, fixtures, points table, and latest news.">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+            VPL
+        </a>
+        <button class="menu-toggle" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="Toggle menu">☰</button>
+        <nav>
+            <a href="index.html" class="active">Home</a>
+            <a href="teams.html">Teams</a>
+            <a href="fixtures.html">Fixtures</a>
+            <a href="points.html">Points Table</a>
+            <a href="stats.html">Stats</a>
+            <a href="admin/index.html" class="admin-link">Admin login</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Village Premier League</h1>
+        <p class="subtitle">Experience the thrill of local cricket</p>
+
+        <div class="grid grid-cols-2">
+            <!-- Featured Match -->
+            <div class="card" id="featured-match-card">
+                <h2>Featured Match</h2>
+                <div id="featured-match-content">
+                    <p>Loading...</p>
+                </div>
+            </div>
+
+            <!-- Points Table Snippet -->
+            <div class="card">
+                <h2>Top Standings</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Pts</th>
+                                <th>NRR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-snippet">
+                            <tr><td>Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <a href="points.html" class="btn btn-outline" style="width: 100%; text-align: center;">View Full Table</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scorecard Modal Overlay -->
+    <div id="scorecard-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 2rem; flex-direction: column;">
+        <div style="position: relative; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center;">
+            <button onclick="closePhoto()" style="position: absolute; top: -40px; right: 0; background: transparent; color: white; border: none; font-size: 2rem; cursor: pointer;">&times;</button>
+            <img id="scorecard-image" src="" style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script>
+
+        window.openPhoto = (photoBase64) => {
+            if (!photoBase64) return;
+            document.getElementById('scorecard-image').src = photoBase64;
+            document.getElementById('scorecard-modal').style.display = 'flex';
+        };
+
+        window.closePhoto = () => {
+            document.getElementById('scorecard-modal').style.display = 'none';
+            document.getElementById('scorecard-image').src = '';
+        };
+
+        // Load Featured Match
+        const matches = Store.getMatches();
+        let featuredMatch = matches.find(m => m.status === 'live') || matches.find(m => m.status === 'upcoming');
+        if (!featuredMatch && matches.length > 0) featuredMatch = matches[matches.length - 1]; // last completed
+
+        const content = document.getElementById('featured-match-content');
+        if (featuredMatch) {
+            const teams = Store.getTeams();
+            const teamA = teams.find(t => t.id === featuredMatch.teamA) || {name: 'TBD', shortName: 'TBD', primaryColor: 'var(--text-muted)'};
+            const teamB = teams.find(t => t.id === featuredMatch.teamB) || {name: 'TBD', shortName: 'TBD', primaryColor: 'var(--text-muted)'};
+            
+            let statusBadge = '';
+            if(featuredMatch.status === 'live') statusBadge = '<span class="badge badge-live">Live</span>';
+            else if (featuredMatch.status === 'upcoming') statusBadge = '<span class="badge badge-upcoming">Upcoming</span>';
+            else statusBadge = '<span class="badge badge-completed">Completed</span>';
+            
+            if (featuredMatch.photoUrl) {
+                document.getElementById('featured-match-card').setAttribute('onclick', `openPhoto('${featuredMatch.photoUrl}')`);
+                document.getElementById('featured-match-card').style.cursor = 'pointer';
+                document.getElementById('featured-match-card').style.transition = 'all 0.3s';
+                document.getElementById('featured-match-card').onmouseover = function() { this.style.transform = 'translateY(-5px)'; };
+                document.getElementById('featured-match-card').onmouseout = function() { this.style.transform = 'none'; };
+            }
+
+            content.innerHTML = `
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem;">
+                    <strong>${featuredMatch.matchNumber || ('Match ' + featuredMatch.id.replace('m',''))} • ${featuredMatch.date}</strong>
+                    ${statusBadge}
+                </div>
+                
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div style="flex:1; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                         ${teamA.logo ? `<img src="${teamA.logo}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${teamA.primaryColor};">` : `<div style="width: 50px; height: 50px; border-radius: 50%; background: ${teamA.primaryColor}; color: white; display:flex; align-items:center; justify-content:center; font-weight: 800; font-size: 1rem;">${teamA.shortName}</div>`}
+                         <span style="font-weight: 900; color: ${teamA.primaryColor}; font-size: 1.2rem;">${teamA.shortName}</span>
+                    </div>
+                    
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, ${teamA.primaryColor} 0%, ${teamB.primaryColor} 100%); display:flex; align-items:center; justify-content:center; font-weight: 900; font-size: 0.6rem; border: 1px solid white;">VS</div>
+                    
+                    <div style="flex:1; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                         ${teamB.logo ? `<img src="${teamB.logo}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${teamB.primaryColor};">` : `<div style="width: 50px; height: 50px; border-radius: 50%; background: ${teamB.primaryColor}; color: white; display:flex; align-items:center; justify-content:center; font-weight: 800; font-size: 1rem;">${teamB.shortName}</div>`}
+                         <span style="font-weight: 900; color: ${teamB.primaryColor}; font-size: 1.2rem;">${teamB.shortName}</span>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 12px; margin-top: 1rem; text-align:center; border: 1px solid rgba(255,255,255,0.05);">
+                    <p style="color: white; font-size: 1.1rem; font-weight: 700; margin: 0;">${featuredMatch.resultText || (featuredMatch.status === 'upcoming' ? 'Match scheduled' : 'Result pending...')}</p>
+                    ${featuredMatch.photoUrl ? `<p style="color: var(--accent-gold); font-size: 0.75rem; margin-top: 0.5rem; margin-bottom: 0; letter-spacing: 1px;">(CLICK TO VIEW SCORECARD)</p>` : ''}
+                </div>
+            `;
+
+            // Card highlight
+            document.getElementById('featured-match-card').style.borderLeft = `5px solid ${teamA.primaryColor}`;
+            document.getElementById('featured-match-card').style.borderRight = `5px solid ${teamB.primaryColor}`;
+
+        } else {
+            content.innerHTML = '<p>No matches scheduled yet.</p>';
+        }
+
+        // Load Standings Snippet
+        const table = Store.getPointsTable().slice(0, 3); // top 3
+        const snippet = document.getElementById('standings-snippet');
+        if (table.length > 0) {
+            snippet.innerHTML = table.map(row => `
+                <tr style="border-left: 3px solid ${row.primaryColor || 'transparent'};">
+                    <td style="font-weight: 600; padding-left: 1rem;">${row.name}</td>
+                    <td style="color: var(--accent-gold); font-weight:800;">${row.pts}</td>
+                    <td>${row.nrrDisplay}</td>
+                </tr>
+            `).join('');
+        } else {
+            snippet.innerHTML = '<tr><td colspan="3">No teams found</td></tr>';
+        }
+    </script>
+</body>
+</html>

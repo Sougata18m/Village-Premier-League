@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Table - Village Premier League</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">VPL</a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="teams.html">Teams</a>
+            <a href="fixtures.html">Fixtures</a>
+            <a href="points.html" class="active">Points Table</a>
+            <a href="stats.html">Stats</a>
+            <a href="admin/index.html" class="admin-link">Admin login</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Points Table</h1>
+        <p class="subtitle">Current standings for the Village Premier League.</p>
+        
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table style="margin-top: 0;">
+                    <thead style="background: rgba(0,0,0,0.3);">
+                        <tr>
+                            <th style="width: 50px; text-align: center;">Pos</th>
+                            <th>Team</th>
+                            <th style="text-align: center;">P</th>
+                            <th style="text-align: center;">W</th>
+                            <th style="text-align: center;">L</th>
+                            <th style="text-align: center;">T</th>
+                            <th style="text-align: center;">NR</th>
+                            <th style="text-align: center;">Pts</th>
+                            <th style="text-align: center;">NRR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="points-table-body">
+                        <!-- Rendered via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/store.js"></script>
+    <script>
+
+        const table = Store.getPointsTable();
+        const tbody = document.getElementById('points-table-body');
+
+        if (table.length > 0) {
+            tbody.innerHTML = table.map((t, index) => `
+                <tr style="border-left: 4px solid ${t.primaryColor || 'transparent'};">
+                    <td style="text-align: center; font-weight: 800; color: var(--text-muted);">${index + 1}</td>
+                    <td style="font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 1rem;">
+                        ${t.logo ? 
+                            `<div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid ${t.primaryColor || 'var(--accent-gold)'}; background: ${t.secondaryColor || '#1a1a1a'};"><img src="${t.logo}" style="width: 100%; height: 100%; object-fit: cover;"></div>` :
+                            `<div style="width: 30px; height: 30px; border-radius: 50%; background: ${t.primaryColor || 'var(--primary-blue)'}; color: ${t.secondaryColor || 'white'}; display:flex; align-items:center; justify-content:center; font-size: 0.8rem; font-weight:800; border: 1px solid var(--glass-border);">${t.shortName}</div>`
+                        }
+                        ${t.name}
+                    </td>
+                    <td style="text-align: center;">${t.p}</td>
+                    <td style="text-align: center;">${t.w}</td>
+                    <td style="text-align: center;">${t.l}</td>
+                    <td style="text-align: center;">${t.t || 0}</td>
+                    <td style="text-align: center;">${t.nr || 0}</td>
+                    <td style="text-align: center; font-weight: 800; color: var(--accent-gold); font-size: 1.2rem;">${t.pts}</td>
+                    <td style="text-align: center; color: ${t.nrr >= 0 ? 'var(--success)' : 'var(--danger)'};">${t.nrrDisplay}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No data available.</td></tr>';
+        }
+    </script>
+</body>
+</html>
