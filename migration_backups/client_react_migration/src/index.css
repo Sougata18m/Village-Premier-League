@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-['Outfit'] bg-primary-blue text-slate-100;
+    background-image: radial-gradient(circle at 50% -20%, #1e3a8a, transparent 60%);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-800/70 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-slate-900/40;
+  }
+  
+  .vpl-button-primary {
+    @apply bg-accent-gold text-primary-blue font-extrabold px-6 py-3 rounded-lg transition-transform hover:scale-105 active:scale-95;
+  }
+  
+  .vpl-button-outline {
+    @apply border-2 border-accent-gold text-accent-gold font-bold px-6 py-3 rounded-lg transition-all hover:bg-accent-gold hover:text-primary-blue;
+  }
+  
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider;
+  }
+}

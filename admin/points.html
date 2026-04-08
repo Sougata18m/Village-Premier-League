@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Points Table | VPL Admin</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <a href="index.html" class="admin-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+                VPL Admin
+            </a>
+            
+            <nav class="admin-nav">
+                <a href="index.html">Overview Dashboard</a>
+                <a href="teams.html">Manage Teams</a>
+                <a href="fixtures.html">Match Center</a>
+                <a href="points.html" class="active">Points Table</a>
+                <a href="stats.html">Update Stats</a>
+            </nav>
+
+            <div class="admin-nav-bottom">
+                <nav class="admin-nav">
+                    <a href="../index.html">
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Open Public Site
+                    </a>
+                    <a href="#" onclick="Store.logout(); return false;" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-top:0.5rem;">
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Secure Logout
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Manage Points Table</h1>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    Admin Panel / Manual Points Entry
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <div>
+                        <h2 style="color: var(--accent-gold); margin:0;">League Standings</h2>
+                        <p style="color: var(--text-muted); margin: 0.5rem 0 0 0; font-size: 0.9rem;">Manually update team statistics for the active season.</p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th style="text-align: center; width: 80px;">Played (P)</th>
+                                <th style="text-align: center; width: 80px;">Won (W)</th>
+                                <th style="text-align: center; width: 80px;">Lost (L)</th>
+                                <th style="text-align: center; width: 80px;">Tied (T)</th>
+                                <th style="text-align: center; width: 80px;">N/R</th>
+                                <th style="text-align: center; width: 100px;">Points</th>
+                                <th style="text-align: center; width: 120px;">NRR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manual-points-body">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Simplified Buttons below the Form -->
+                <div style="margin-top: 2rem; display:flex; justify-content: flex-end; gap: 1rem;">
+                    <button id="edit-btn" class="btn btn-outline" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="toggleEdit()">Edit</button>
+                    <button id="save-btn" class="btn btn-primary" onclick="saveTable()" style="display:none;">Save</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/store.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Store.requireAuth();
+
+            let isEditing = false;
+
+            window.renderTable = function() {
+                const tableData = Store.getPointsTable();
+                const tbody = document.getElementById('manual-points-body');
+                
+                if (!tableData || tableData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">No teams registered. Please add teams first.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = tableData.map(t => `
+                    <tr data-id="${t.id}">
+                        <td style="display: flex; align-items: center; gap: 1rem;">
+                            ${t.logo ? `<img src="${t.logo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">` : `<div style="width: 30px; height: 30px; border-radius: 50%; background: var(--glass-border); display:flex; align-items:center; justify-content:center; font-size: 0.7rem;">${t.shortName}</div>`}
+                            <strong style="color: white;">${t.name}</strong>
+                        </td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.p || 0}" data-field="p" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.w || 0}" data-field="w" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.l || 0}" data-field="l" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.t || 0}" data-field="t" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.nr || 0}" data-field="nr" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="number" class="table-input" value="${t.pts || 0}" data-field="pts" style="font-weight: 800; color: var(--accent-gold);" ${isEditing ? '' : 'disabled'}></td>
+                        <td style="text-align: center;"><input type="text" class="table-input" value="${t.nrr || '0.000'}" data-field="nrr" ${isEditing ? '' : 'disabled'}></td>
+                    </tr>
+                `).join('');
+            };
+
+            window.toggleEdit = function() {
+                isEditing = !isEditing;
+                window.renderTable();
+                
+                const saveBtn = document.getElementById('save-btn');
+                if (saveBtn) saveBtn.style.display = isEditing ? 'block' : 'none';
+            };
+
+            window.saveTable = function() {
+                const rows = document.querySelectorAll('#manual-points-body tr');
+                const tableData = [];
+                
+                rows.forEach(row => {
+                    const id = row.getAttribute('data-id');
+                    if (!id) return;
+
+                    const entry = { id };
+                    row.querySelectorAll('.table-input').forEach(input => {
+                        const field = input.getAttribute('data-field');
+                        entry[field] = field === 'nrr' ? input.value : parseInt(input.value) || 0;
+                    });
+                    tableData.push(entry);
+                });
+
+                Store.saveManualPoints(Store.getActiveYear(), tableData);
+                alert('Points table saved successfully!');
+                window.toggleEdit(); 
+            };
+
+            // Style injection
+            const style = document.createElement('style');
+            style.textContent = `
+                .table-input {
+                    width: 100%;
+                    background: rgba(255,255,255,0.05);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    color: white;
+                    padding: 0.4rem;
+                    border-radius: 4px;
+                    text-align: center;
+                    transition: all 0.2s;
+                    font-size: 0.9rem;
+                }
+                .table-input:focus {
+                    border-color: var(--accent-gold);
+                    background: rgba(0,0,0,0.3);
+                    outline: none;
+                    box-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+                }
+                .table-input:disabled {
+                    background: transparent;
+                    border-color: transparent;
+                    cursor: default;
+                    color: rgba(255,255,255,0.8);
+                }
+                .table-input::-webkit-outer-spin-button,
+                .table-input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Initial render
+            window.renderTable();
+        });
+    </script>
+</body>
+</html>

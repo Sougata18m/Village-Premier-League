@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Teams | VPL Admin</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <a href="index.html" class="admin-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+                VPL Admin
+            </a>
+            
+            <nav class="admin-nav">
+                <a href="index.html">Overview Dashboard</a>
+                <a href="teams.html" class="active">Manage Teams</a>
+                <a href="fixtures.html">Match Center</a>
+                <a href="points.html">Points Table</a>
+                <a href="stats.html">Update Stats</a>
+            </nav>
+
+            <div class="admin-nav-bottom">
+                <nav class="admin-nav">
+                    <a href="../index.html">
+                        <!-- Icon -->
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Open Public Site
+                    </a>
+                    <a href="#" onclick="Store.logout(); return false;" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-top:0.5rem;">
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Secure Logout
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Franchise Management</h1>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    Admin Panel / Manage Teams
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2">
+                <!-- Add/Update Team Form -->
+                <div class="admin-card">
+                    <h2 style="color: var(--accent-gold);" id="team-form-title">Register New Franchise</h2>
+                    <form id="add-team-form" style="display:flex; flex-direction:column; gap: 1.2rem;">
+                        <input type="hidden" id="t-id">
+                        <div class="form-group" style="margin:0;">
+                            <label>Team Full Name</label>
+                            <input type="text" id="t-name" required placeholder="e.g. Royal Kings">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Short Name ID (2-3 Letters)</label>
+                            <input type="text" id="t-short" required maxlength="3" placeholder="e.g. RK">
+                        </div>
+                        
+                        <!-- Team Colors -->
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Primary Color</label>
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <input type="color" id="t-color1" value="#D4AF37" style="width: 40px; height: 40px; border:none; background:transparent; cursor:pointer;">
+                                    <input type="text" id="t-color1-text" value="#D4AF37" style="flex:1;" oninput="document.getElementById('t-color1').value = this.value">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Secondary Color</label>
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <input type="color" id="t-color2" value="#1A1A1A" style="width: 40px; height: 40px; border:none; background:transparent; cursor:pointer;">
+                                    <input type="text" id="t-color2-text" value="#1A1A1A" style="flex:1;" oninput="document.getElementById('t-color2').value = this.value">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Trophy Winning Years <span style="color:var(--text-muted); font-size:0.8rem;">(comma separated, e.g. 2023, 2025)</span></label>
+                            <input type="text" id="t-trophy" placeholder="e.g. 2023, 2025">
+                        </div>
+                        <div class="form-group" style="margin:0; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                            <label style="color: var(--accent-gold); display:block; margin-bottom: 0.5rem;">Team Logo</label>
+                            <input type="file" id="t-logo-file" accept="image/*" onchange="previewTeamLogo(event)">
+                            <input type="hidden" id="t-logo-base64">
+                            <div id="t-logo-preview-container" style="display:none; margin-top: 1rem; width: 60px; height: 60px; border-radius: 50%; overflow:hidden; border: 2px solid var(--accent-gold);">
+                                <img id="t-logo-preview" src="" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:1rem;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;" id="team-submit-btn">Create Team</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- List Teams -->
+                <div class="admin-card">
+                    <h2>Active Database</h2>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Franchise Name</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teams-list">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Squad Modal Overlay -->
+    <div id="squad-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="admin-card" style="width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; position: relative; display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <button onclick="closeSquadModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; color: var(--text-muted); border: none; font-size: 1.5rem; cursor: pointer; z-index:10;">&times;</button>
+            
+            <div style="grid-column: span 2;">
+                <h2 id="squad-modal-title" style="color: var(--accent-gold); margin-top:0;">Manage Squad</h2>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Season (Year)</label>
+                    <select id="squad-year-select" onchange="loadSquadForYear()"></select>
+                </div>
+            </div>
+
+            <!-- Left: Current Roster -->
+            <div>
+                <h3 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-top:0;">Current Roster</h3>
+                <div id="roster-list" style="display:flex; flex-direction:column; gap: 0.5rem; max-height: 50vh; overflow-y:auto; padding-right:0.5rem;">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+            <!-- Right: Add Player Form -->
+            <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px;">
+                <h3 style="color: var(--accent-gold); margin-top:0;">Add / Edit Player</h3>
+                <form id="add-player-form" style="display:flex; flex-direction:column; gap: 1rem;">
+                    <input type="hidden" id="p-id">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap: 1rem;">
+                        <div class="form-group" style="margin:0; flex-grow:1;"><label>Full Name</label><input type="text" id="p-name" required></div>
+                        <div class="form-group" style="margin:0; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;"><input type="checkbox" id="p-captain" style="width:auto;"><label style="margin:0; color:var(--accent-gold);">Team Captain</label></div>
+                    </div>
+                    <div class="form-group" style="margin:0;"><label>Player Photo</label>
+                        <input type="file" id="p-photo-file" accept="image/*" onchange="previewPlayerPhoto(event)">
+                        <input type="hidden" id="p-photo-base64">
+                        <img id="p-photo-preview" style="display:none; width:60px; height:60px; border-radius:50%; margin-top:0.5rem; object-fit:cover; border:2px solid var(--accent-gold);">
+                    </div>
+                    
+                    <div class="grid grid-cols-3" style="gap: 1rem;">
+                        <div class="form-group" style="margin:0;"><label>Runs</label><input type="number" id="p-runs" value="0"></div>
+                        <div class="form-group" style="margin:0;"><label>Wickets</label><input type="number" id="p-wickets" value="0"></div>
+                        <div class="form-group" style="margin:0;"><label>Average</label><input type="text" id="p-avg" value="0.0"></div>
+                        
+                        <div class="form-group" style="margin:0;"><label>Strike Rate</label><input type="text" id="p-sr" value="0.0"></div>
+                        <div class="form-group" style="margin:0;"><label>Economy</label><input type="text" id="p-econ" value="0.0"></div>
+                        <div class="form-group" style="margin:0;"><label>HS</label><input type="text" id="p-hs" value="0"></div>
+                        
+                        <div class="form-group" style="margin:0;"><label>BBI</label><input type="text" id="p-bbi" value="0/0"></div>
+                        <div class="form-group" style="margin:0;"><label>100s</label><input type="number" id="p-100s" value="0"></div>
+                        <div class="form-group" style="margin:0;"><label>50s</label><input type="number" id="p-50s" value="0"></div>
+                        
+                        <div class="form-group" style="margin:0;"><label>Total 6s</label><input type="number" id="p-6s" value="0"></div>
+                        <div class="form-group" style="margin:0;"><label>Total 4s</label><input type="number" id="p-4s" value="0"></div>
+                        <div class="form-group" style="margin:0;"><label>Fast 50 (bs)</label><input type="number" id="p-f50" value="0" title="Balls taken"></div>
+                        <div class="form-group" style="margin:0;"><label>Fast 100 (bs)</label><input type="number" id="p-f100" value="0" title="Balls taken"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Save Player to Roster</button>
+                </form>
+            </div>
+            
+            <input type="hidden" id="squad-team-id">
+        </div>
+    </div>
+
+    <script src="../js/store.js"></script>
+    <script>
+        Store.requireAuth();
+
+        const renderTeams = () => {
+            const teams = Store.getTeams();
+            const list = document.getElementById('teams-list');
+            if (teams.length === 0) {
+                list.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">No franchises found.</td></tr>';
+                return;
+            }
+            list.innerHTML = teams.map(t => `
+                <tr>
+                    <td style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="position: relative;">
+                            ${t.logo ? 
+                                `<div style="width: 45px; height: 45px; border-radius: 50%; overflow: hidden; border: 2px solid ${t.primaryColor || 'var(--accent-gold)'}; background: ${t.secondaryColor || '#1a1a1a'};"><img src="${t.logo}" style="width: 100%; height: 100%; object-fit: cover;"></div>` : 
+                                `<div style="width: 45px; height: 45px; border-radius: 50%; background: ${t.primaryColor || 'var(--accent-gold)'}; color: ${t.secondaryColor || '#1a1a1a'}; display:flex; align-items:center; justify-content:center; font-weight: 800; font-size: 0.9rem;">${t.shortName}</div>`
+                            }
+                            <div style="position: absolute; bottom: -2px; right: -2px; width: 15px; height: 15px; border-radius: 50%; background: ${t.primaryColor || 'var(--accent-gold)'}; border: 1px solid white;"></div>
+                        </div>
+                        <div>
+                            <strong style="color: white; font-size: 1.1rem; display:block;">${t.name}</strong>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">CODE: ${t.shortName}</span>
+                                <div style="width:10px; height:10px; border-radius:50%; background:${t.primaryColor}"></div>
+                                <div style="width:10px; height:10px; border-radius:50%; background:${t.secondaryColor}"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size:0.8rem; margin-right: 0.5rem; color: var(--accent-gold); border-color: var(--accent-gold);" onclick="editTeam('${t.id}')">Edit</button>
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size:0.8rem; margin-right: 0.5rem; color: var(--success); border-color: var(--success);" onclick="openSquadModal('${t.id}')">Squad</button>
+                        <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" onclick="deleteTeam('${t.id}', this)">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        };
+
+        // Sync color picker and text
+        const cp1 = document.getElementById('t-color1');
+        const ct1 = document.getElementById('t-color1-text');
+        const cp2 = document.getElementById('t-color2');
+        const ct2 = document.getElementById('t-color2-text');
+        
+        cp1.addEventListener('input', (e) => ct1.value = e.target.value.toUpperCase());
+        cp2.addEventListener('input', (e) => ct2.value = e.target.value.toUpperCase());
+
+        window.previewTeamLogo = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    document.getElementById('t-logo-base64').value = base64;
+                    document.getElementById('t-logo-preview').src = base64;
+                    document.getElementById('t-logo-preview-container').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.resetTeamForm = () => {
+            document.getElementById('t-id').value = '';
+            document.getElementById('add-team-form').reset();
+            document.getElementById('t-logo-base64').value = '';
+            document.getElementById('t-logo-preview').src = '';
+            document.getElementById('t-logo-preview-container').style.display = 'none';
+            document.getElementById('team-form-title').innerText = 'Register New Franchise';
+            document.getElementById('team-submit-btn').innerText = 'Create Team';
+            document.getElementById('t-color1').value = '#D4AF37';
+            document.getElementById('t-color1-text').value = '#D4AF37';
+            document.getElementById('t-color2').value = '#1A1A1A';
+            document.getElementById('t-color2-text').value = '#1A1A1A';
+            document.getElementById('t-trophy').value = '';
+        };
+
+        window.editTeam = (id) => {
+            const t = Store.getTeams().find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('t-id').value = t.id;
+            document.getElementById('t-name').value = t.name;
+            document.getElementById('t-short').value = t.shortName;
+            document.getElementById('t-color1').value = t.primaryColor || '#D4AF37';
+            document.getElementById('t-color1-text').value = t.primaryColor || '#D4AF37';
+            document.getElementById('t-color2').value = t.secondaryColor || '#1A1A1A';
+            document.getElementById('t-color2-text').value = t.secondaryColor || '#1A1A1A';
+            
+            if (t.logo) {
+                document.getElementById('t-logo-base64').value = t.logo;
+                document.getElementById('t-logo-preview').src = t.logo;
+                document.getElementById('t-logo-preview-container').style.display = 'block';
+            } else {
+                document.getElementById('t-logo-base64').value = '';
+                document.getElementById('t-logo-preview').src = '';
+                document.getElementById('t-logo-preview-container').style.display = 'none';
+            }
+
+            document.getElementById('t-trophy').value = (t.trophyYears || []).join(', ');
+            
+            document.getElementById('team-form-title').innerText = 'Edit Franchise: ' + t.name;
+            document.getElementById('team-submit-btn').innerText = 'Update Team';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        document.getElementById('add-team-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('t-id').value || 't' + Date.now();
+            const name = document.getElementById('t-name').value;
+            const shortName = document.getElementById('t-short').value.toUpperCase();
+            const logo = document.getElementById('t-logo-base64').value || null;
+            const primaryColor = document.getElementById('t-color1').value;
+            const secondaryColor = document.getElementById('t-color2').value;
+            
+            const existingTeam = id.startsWith('t1') ? Store.getTeams().find(t => t.id === id) : null;
+            const trophyRaw = document.getElementById('t-trophy').value;
+            const trophyYears = trophyRaw ? trophyRaw.split(',').map(y => y.trim()).filter(y => y) : [];
+            const teamData = { 
+                id, 
+                name, 
+                shortName, 
+                logo, 
+                primaryColor, 
+                secondaryColor,
+                trophyYears,
+                players: (existingTeam ? existingTeam.players : []), 
+                squads: (existingTeam ? existingTeam.squads : {}) 
+            };
+
+            // If updating, preserve players and squads
+            if (document.getElementById('t-id').value) {
+                const old = Store.getTeams().find(x => x.id === id);
+                if (old) {
+                    teamData.players = old.players || [];
+                    teamData.squads = old.squads || {};
+                    if (!teamData.trophyYears.length && old.trophyYears) {
+                        teamData.trophyYears = old.trophyYears;
+                    }
+                }
+            }
+            
+            Store.saveTeam(teamData);
+            resetTeamForm();
+            renderTeams();
+        });
+
+        window.deleteTeam = (id, btn) => {
+            if(btn && btn.innerText === 'Delete') {
+                btn.innerText = 'Are you sure?';
+                btn.style.backgroundColor = 'darkred';
+                setTimeout(() => { if(btn) { btn.innerText = 'Delete'; btn.style.backgroundColor = ''; } }, 3000);
+                return;
+            }
+            Store.deleteTeam(id);
+            renderTeams();
+        };
+
+        window.openSquadModal = (teamId) => {
+            const team = Store.getTeams().find(t => t.id === teamId);
+            if(!team) return;
+            
+            document.getElementById('squad-team-id').value = team.id;
+            document.getElementById('squad-modal-title').innerText = `Manage Squad: ${team.name}`;
+            
+            const years = Store.getAvailableYears();
+            document.getElementById('squad-year-select').innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+            document.getElementById('squad-year-select').value = Store.getActiveYear();
+
+            resetPlayerForm();
+            loadSquadForYear();
+            document.getElementById('squad-modal').style.display = 'flex';
+        };
+
+        window.closeSquadModal = () => {
+            document.getElementById('squad-modal').style.display = 'none';
+        };
+        
+        window.previewPlayerPhoto = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('p-photo-base64').value = e.target.result;
+                    document.getElementById('p-photo-preview').src = e.target.result;
+                    document.getElementById('p-photo-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.resetPlayerForm = () => {
+            document.getElementById('add-player-form').reset();
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-photo-base64').value = '';
+            document.getElementById('p-photo-preview').src = '';
+            document.getElementById('p-photo-preview').style.display = 'none';
+            document.getElementById('p-captain').checked = false;
+        };
+
+        window.loadSquadForYear = () => {
+            const teamId = document.getElementById('squad-team-id').value;
+            const year = document.getElementById('squad-year-select').value;
+            const team = Store.getTeams().find(t => t.id === teamId);
+            const squads = team.squads || {};
+            
+            // Upgrade legacy string array to object array if necessary
+            let playersForYear = squads[year] || [];
+            if(playersForYear.length > 0 && typeof playersForYear[0] === 'string') {
+                playersForYear = playersForYear.map(name => ({ id: 'p'+Date.now()+Math.random().toString().substr(2,5), name, runs:0, wickets:0, average:0, strikeRate:0, economy:0, fifties:0, hundreds:0, highestScore:'0', bestBowling:'0/0', totalSixes:0, totalFours:0, inningsSixes:0, inningsFours:0, fastestFifty:0, fastestHundred:0, image:null }));
+                team.squads[year] = playersForYear;
+                Store.saveTeam(team);
+            }
+            
+            const list = document.getElementById('roster-list');
+            if(playersForYear.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">No players registered for this season.</p>';
+            } else {
+                list.innerHTML = playersForYear.map(p => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.3); padding:0.8rem; border-radius:6px; border-left: 3px solid var(--accent-gold);">
+                        <div style="display:flex; align-items:center; gap: 1rem;">
+                            ${p.image ? `<img src="${p.image}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:50%; background:var(--glass-border); display:flex; align-items:center; justify-content:center;">👤</div>`}
+                            <div>
+                                <strong style="color:white; display:block;">${p.name} ${p.isCaptain ? '<span style="color:var(--accent-gold); font-size:0.8rem; margin-left:0.5rem;">(C)</span>' : ''}</strong>
+                                <span style="color:var(--text-muted); font-size:0.75rem;">Runs: ${p.runs} | Wkts: ${p.wickets}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-outline" style="padding:0.3rem 0.6rem; font-size:0.7rem; color:var(--accent-gold); border-color:var(--accent-gold);" onclick="editPlayer('${p.id}')">Edit</button>
+                            <button type="button" class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.7rem;" onclick="removePlayer('${p.id}', this)">X</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        };
+
+        window.editPlayer = (playerId) => {
+            const teamId = document.getElementById('squad-team-id').value;
+            const year = document.getElementById('squad-year-select').value;
+            const team = Store.getTeams().find(t => t.id === teamId);
+            const players = team.squads[year] || [];
+            const p = players.find(x => x.id === playerId);
+            if(!p) return;
+            
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-captain').checked = p.isCaptain || false;
+            document.getElementById('p-name').value = p.name || '';
+            document.getElementById('p-runs').value = p.runs || 0;
+            document.getElementById('p-wickets').value = p.wickets || 0;
+            document.getElementById('p-avg').value = p.average || 0;
+            document.getElementById('p-sr').value = p.strikeRate || 0;
+            document.getElementById('p-econ').value = p.economy || 0;
+            document.getElementById('p-50s').value = p.fifties || 0;
+            document.getElementById('p-100s').value = p.hundreds || 0;
+            document.getElementById('p-hs').value = p.highestScore || 0;
+            document.getElementById('p-bbi').value = p.bestBowling || '0/0';
+            document.getElementById('p-6s').value = p.totalSixes || 0;
+            document.getElementById('p-4s').value = p.totalFours || 0;
+            document.getElementById('p-f50').value = p.fastestFifty || 0;
+            document.getElementById('p-f100').value = p.fastestHundred || 0;
+            
+            if(p.image) {
+                document.getElementById('p-photo-base64').value = p.image;
+                document.getElementById('p-photo-preview').src = p.image;
+                document.getElementById('p-photo-preview').style.display = 'block';
+            } else {
+                document.getElementById('p-photo-base64').value = '';
+                document.getElementById('p-photo-preview').style.display = 'none';
+            }
+        };
+
+        window.removePlayer = (playerId, btn) => {
+            if(btn && btn.innerText === 'X') {
+                btn.innerText = 'Sure?';
+                btn.style.backgroundColor = 'darkred';
+                setTimeout(() => { if(btn) { btn.innerText = 'X'; btn.style.backgroundColor = ''; } }, 3000);
+                return;
+            }
+            const teamId = document.getElementById('squad-team-id').value;
+            const year = document.getElementById('squad-year-select').value;
+            const team = Store.getTeams().find(t => t.id === teamId);
+            
+            team.squads[year] = (team.squads[year] || []).filter(p => p.id !== playerId);
+            Store.saveTeam(team);
+            loadSquadForYear();
+        };
+
+        document.getElementById('add-player-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const teamId = document.getElementById('squad-team-id').value;
+            const year = document.getElementById('squad-year-select').value;
+            const team = Store.getTeams().find(t => t.id === teamId);
+            
+            const playerId = document.getElementById('p-id').value || 'p' + Date.now();
+            
+            const isCap = document.getElementById('p-captain').checked;
+            
+            const playerObj = {
+                id: playerId,
+                name: document.getElementById('p-name').value,
+                image: document.getElementById('p-photo-base64').value || null,
+                isCaptain: isCap,
+                runs: parseInt(document.getElementById('p-runs').value) || 0,
+                wickets: parseInt(document.getElementById('p-wickets').value) || 0,
+                average: parseFloat(document.getElementById('p-avg').value) || 0,
+                strikeRate: parseFloat(document.getElementById('p-sr').value) || 0,
+                economy: parseFloat(document.getElementById('p-econ').value) || 0,
+                fifties: parseInt(document.getElementById('p-50s').value) || 0,
+                hundreds: parseInt(document.getElementById('p-100s').value) || 0,
+                highestScore: document.getElementById('p-hs').value || '0',
+                bestBowling: document.getElementById('p-bbi').value || '0/0',
+                totalSixes: parseInt(document.getElementById('p-6s').value) || 0,
+                totalFours: parseInt(document.getElementById('p-4s').value) || 0,
+                fastestFifty: parseInt(document.getElementById('p-f50').value) || 0,
+                fastestHundred: parseInt(document.getElementById('p-f100').value) || 0
+            };
+            
+            team.squads = team.squads || {};
+            if(!team.squads[year]) team.squads[year] = [];
+            
+            if (isCap) {
+                team.squads[year].forEach(p => p.isCaptain = false);
+            }
+            
+            const idx = team.squads[year].findIndex(p => p.id === playerId);
+            if(idx > -1) {
+                team.squads[year][idx] = playerObj;
+            } else {
+                team.squads[year].push(playerObj);
+            }
+            
+            Store.saveTeam(team);
+            resetPlayerForm();
+            loadSquadForYear();
+            renderTeams(); // Update squad size if displayed
+        });
+
+        renderTeams();
+    </script>
+</body>
+</html>

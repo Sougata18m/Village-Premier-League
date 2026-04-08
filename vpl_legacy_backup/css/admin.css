@@ -1,0 +1,165 @@
+/* Admin specific styles overriding main.css */
+
+body.admin-body {
+    display: block; /* Override flex-col from main.css */
+    background-color: #0b1120;
+    background-image: none;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: 260px;
+    background: #141b2d;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.admin-brand {
+    color: var(--accent-gold);
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.admin-nav {
+    display: flex;
+    flex-direction: column; /* Override nav{display:flex(row)} from main.css */
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.admin-nav a {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.admin-nav a:hover, .admin-nav a.active {
+    background: rgba(251, 191, 36, 0.1); /* gold with opacity */
+    color: var(--accent-gold);
+}
+
+.admin-nav-bottom {
+    margin-top: auto;
+    padding-top: 2rem;
+}
+
+.admin-nav-bottom a {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    justify-content: center;
+}
+
+.admin-nav-bottom a:hover {
+    background: white;
+    color: #0b1120;
+}
+
+/* Content Area */
+.admin-content {
+    margin-left: 260px;
+    padding: 2.5rem 3rem;
+    width: calc(100% - 260px);
+    background: #0b1120;
+    min-height: 100vh;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-header h1 {
+    margin-bottom: 0;
+    font-size: 2rem;
+    color: white;
+}
+
+/* Adjusted Cards */
+.admin-card {
+    background: #141b2d;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-card h2 {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    margin-bottom: 1rem;
+}
+
+/* Forms overrides */
+.admin-content form label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-content input, .admin-content select {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.8rem;
+}
+
+.admin-content input:focus, .admin-content select:focus {
+    border-color: var(--accent-gold);
+}
+
+/* Tables in admin */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th, .admin-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table th {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #0f172a;
+}

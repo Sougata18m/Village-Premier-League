@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | VPL</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body {
+            background-color: #0b1120;
+            background-image: radial-gradient(circle at 50% -20%, #1e3a8a, transparent 60%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .login-card {
+            background: #141b2d;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .login-card h1 {
+            color: var(--accent-gold);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        input {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1rem;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .error-msg {
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+            VPL Secure
+        </h1>
+        <div id="error" class="error-msg">Invalid Username or Password</div>
+        <form id="login-form">
+            <div class="form-group">
+                <label style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Admin Username</label>
+                <input type="text" id="username" required autocomplete="off" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label style="color: var(--text-muted); display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Secure Password</label>
+                <input type="password" id="password" required placeholder="Enter password">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1rem;">Authenticate</button>
+            <a href="../index.html" class="btn btn-outline" style="width: 100%; padding: 0.8rem; margin-top: 1rem; text-align: center; color: var(--text-muted); border-color: rgba(255,255,255,0.1);">Return to Public Site</a>
+        </form>
+    </div>
+
+    <script src="../js/store.js"></script>
+    <script>
+        if (Store.isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            if (Store.login(u, p)) {
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        });
+    </script>
+</body>
+</html>

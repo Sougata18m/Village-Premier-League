@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Center | VPL Admin</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <a href="index.html" class="admin-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+                VPL Admin
+            </a>
+            
+            <nav class="admin-nav">
+                <a href="index.html">Overview Dashboard</a>
+                <a href="teams.html">Manage Teams</a>
+                <a href="fixtures.html" class="active">Match Center</a>
+                <a href="points.html">Points Table</a>
+                <a href="stats.html">Update Stats</a>
+            </nav>
+
+            <div class="admin-nav-bottom">
+                <nav class="admin-nav">
+                    <a href="../index.html">
+                        <!-- Icon -->
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Open Public Site
+                    </a>
+                    <a href="#" onclick="Store.logout(); return false;" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-top:0.5rem;">
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Secure Logout
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Match Center</h1>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    Admin Panel / Matches
+                </div>
+            </div>
+
+            <!-- Add/Update Match Form -->
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <h2 style="color: var(--accent-gold);" id="form-title">Add/Update Match record</h2>
+                <form id="match-form" class="grid grid-cols-2" style="gap: 1.5rem;">
+                    <input type="hidden" id="m-id">
+                    
+                    <div class="form-group" style="margin:0;">
+                        <label>Match Number / Name</label>
+                        <input type="text" id="m-number" placeholder="e.g. Match 1, Semi-Final" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Date</label>
+                        <input type="date" id="m-date" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Venue</label>
+                        <input type="text" id="m-venue" value="Village Ground" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Status</label>
+                        <select id="m-status">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="live">Live Now</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Team A</label>
+                        <select id="m-teamA" required></select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Team B</label>
+                        <select id="m-teamB" required></select>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2; margin:0; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                        <label style="color: var(--accent-gold); font-size:1.1rem; margin-bottom: 0.5rem; display:block;">Scorecard Photo</label>
+                        <input type="file" id="m-photo" accept="image/*" onchange="previewImage(event)">
+                        <input type="hidden" id="m-photo-base64">
+                        <div id="photo-preview-container" style="margin-top: 1rem; display:none; max-width: 300px; border: 1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden;">
+                            <img id="photo-preview" style="width:100%; display:block;">
+                            <button type="button" class="btn btn-danger" style="width:100%; border-radius:0;" onclick="clearImage()">Remove Photo</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2; margin:0;">
+                        <label>Final Result (Text)</label>
+                        <input type="text" id="m-result" placeholder="e.g., Team A won by 5 wickets">
+                    </div>
+                    
+
+                    <div class="form-group" style="grid-column: span 2; margin:0;">
+                        <label style="color: var(--text-muted)">Declared Winner (Required for Points Table)</label>
+                        <select id="m-winner">
+                            <option value="">None / Tie / Abandoned</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2; margin:0; display:flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Save Match Record</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="grid" id="matches-list">
+                <!-- Loaded via JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/store.js"></script>
+    <script>
+        Store.requireAuth();
+
+        const teams = Store.getTeams();
+        const getTeamName = id => (teams.find(t => t.id === id) || {}).name || id;
+
+        // Populate selects
+        const ta = document.getElementById('m-teamA');
+        const tb = document.getElementById('m-teamB');
+        
+        let opts = '<option value="">Select Team</option>';
+        teams.forEach(t => opts += `<option value="${t.id}">${t.name}</option>`);
+        ta.innerHTML = opts;
+        tb.innerHTML = opts;
+
+        // Populate winner dynamically
+        const populateWinner = () => {
+            const teamAId = ta.value;
+            const teamBId = tb.value;
+            const wSelect = document.getElementById('m-winner');
+            const currentVal = wSelect.value;
+            wSelect.innerHTML = `<option value="">None / Tie / Abandoned</option>`;
+            if (teamAId) wSelect.innerHTML += `<option value="${teamAId}">${getTeamName(teamAId)}</option>`;
+            if (teamBId) wSelect.innerHTML += `<option value="${teamBId}">${getTeamName(teamBId)}</option>`;
+            wSelect.value = currentVal;
+        };
+
+        ta.addEventListener('change', () => {
+            populateWinner();
+        });
+        tb.addEventListener('change', () => {
+            populateWinner();
+        });
+
+        // Toggle score inputs based on status
+        const statusSelect = document.getElementById('m-status');
+        const scoreInputs = document.getElementById('score-inputs-container');
+        statusSelect.addEventListener('change', () => {
+            // NRR inputs were removed
+        });
+
+        // Image handling
+        window.previewImage = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    document.getElementById('m-photo-base64').value = base64;
+                    document.getElementById('photo-preview').src = base64;
+                    document.getElementById('photo-preview-container').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.clearImage = () => {
+            document.getElementById('m-photo').value = '';
+            document.getElementById('m-photo-base64').value = '';
+            document.getElementById('photo-preview').src = '';
+            document.getElementById('photo-preview-container').style.display = 'none';
+        };
+
+        window.resetForm = () => {
+            document.getElementById('m-id').value = '';
+            document.getElementById('match-form').reset();
+            clearImage();
+            populateWinner();
+            document.getElementById('form-title').innerText = 'Add New Match Record';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        document.getElementById('match-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('m-id').value || 'm' + Date.now();
+            
+            const m = {
+                id,
+                matchNumber: document.getElementById('m-number').value,
+                date: document.getElementById('m-date').value,
+                venue: document.getElementById('m-venue').value,
+                teamA: document.getElementById('m-teamA').value,
+                teamB: document.getElementById('m-teamB').value,
+                status: document.getElementById('m-status').value,
+                photoUrl: document.getElementById('m-photo-base64').value || null,
+                resultText: document.getElementById('m-result').value,
+                winner: document.getElementById('m-winner').value || null
+            };
+
+            if (m.teamA === m.teamB) return alert('Teams must be different!');
+            
+            Store.saveMatch(m);
+            resetForm();
+            renderMatches();
+            alert('Match record saved!');
+        });
+
+        const renderMatches = () => {
+            const matches = Store.getMatches();
+            const list = document.getElementById('matches-list');
+            if (matches.length === 0) {
+                list.innerHTML = '<div class="admin-card" style="text-align:center; color: var(--text-muted);">No matches scheduled.</div>';
+                return;
+            }
+
+            list.innerHTML = matches.map(m => `
+                <div class="admin-card" style="display:flex; justify-content: space-between; align-items: flex-start; border-left: 4px solid var(--accent-gold);">
+                    <div style="flex: 1;">
+                        <div style="display:flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                            <strong style="color:var(--accent-gold);">${m.matchNumber || 'Match'}</strong>
+                            <span style="color:var(--text-muted); font-size:0.8rem; text-transform: uppercase;">${m.date} | ${m.venue}</span>
+                            <span class="badge ${m.status === 'live' ? 'badge-live' : (m.status==='completed'?'badge-completed':'badge-upcoming')}">${m.status}</span>
+                        </div>
+                        <h3 style="margin: 0; color: white; display:flex; align-items:center; gap: 0.5rem;">
+                            ${getTeamName(m.teamA)} <span style="color:var(--text-muted); font-size:1rem; font-weight:normal;">vs</span> ${getTeamName(m.teamB)}
+                        </h3>
+                        ${m.resultText ? `<p style="color:var(--success); font-weight: 600; font-size:0.9rem; margin-top:0.5rem;">${m.resultText}</p>` : ''}
+                    </div>
+                    ${m.photoUrl ? `
+                    <div style="width: 80px; height: 80px; margin-left:1rem; border-radius: 8px; overflow:hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="${m.photoUrl}" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    ` : ''}
+                    <div style="display:flex; gap: 0.5rem; flex-direction:column; margin-left: 1rem;">
+                        <button class="btn btn-outline" style="padding: 0.4rem 1rem; border-color:var(--accent-gold); color:var(--accent-gold);" onclick="openEditor('${m.id}')">Edit</button>
+                        <button class="btn btn-danger" style="padding: 0.4rem 1rem;" onclick="deleteMatch('${m.id}', this)">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.deleteMatch = (id, btn) => {
+            if(btn && btn.innerText === 'Delete') {
+                btn.innerText = 'Are you sure?';
+                btn.style.backgroundColor = 'darkred';
+                setTimeout(() => { if(btn) { btn.innerText = 'Delete'; btn.style.backgroundColor = ''; } }, 3000);
+                return;
+            }
+            Store.deleteMatch(id);
+            renderMatches();
+        };
+
+        window.openEditor = (id) => {
+            const m = Store.getMatches().find(x => x.id === id);
+            
+            document.getElementById('form-title').innerText = 'Edit Match Record: ' + (m.matchNumber || m.id);
+
+            document.getElementById('m-id').value = m.id;
+            document.getElementById('m-number').value = m.matchNumber || '';
+            document.getElementById('m-date').value = m.date || '';
+            document.getElementById('m-venue').value = m.venue || '';
+            document.getElementById('m-status').value = m.status || 'upcoming';
+            
+            document.getElementById('m-teamA').value = m.teamA;
+            document.getElementById('m-teamB').value = m.teamB;
+            
+            populateWinner();
+            document.getElementById('m-winner').value = m.winner || '';
+            document.getElementById('m-result').value = m.resultText || '';
+
+            if (m.photoUrl) {
+                document.getElementById('m-photo-base64').value = m.photoUrl;
+                document.getElementById('photo-preview').src = m.photoUrl;
+                document.getElementById('photo-preview-container').style.display = 'block';
+            } else {
+                clearImage();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        renderMatches();
+    </script>
+</body>
+</html>

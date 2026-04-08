@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Stats | VPL Admin</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <a href="index.html" class="admin-brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2h-5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 11h-5V4h5v9zm-7.5-2H5c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h2V3H5c-1.65 0-3 1.35-3 3v4c0 1.65 1.35 3 3 3h2v-2zm12-4V6c0-1.65-1.35-3-3-3h-2v2h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2v2h2c1.65 0 3-1.35 3-3z"/></svg>
+                VPL Admin
+            </a>
+            
+            <nav class="admin-nav">
+                <a href="index.html">Overview Dashboard</a>
+                <a href="teams.html">Manage Teams</a>
+                <a href="fixtures.html">Match Center</a>
+                <a href="points.html">Points Table</a>
+                <a href="stats.html" class="active">Update Stats</a>
+            </nav>
+
+            <div class="admin-nav-bottom">
+                <nav class="admin-nav">
+                    <a href="../index.html">
+                        <!-- Icon -->
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Open Public Site
+                    </a>
+                    <a href="#" onclick="Store.logout(); return false;" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-top:0.5rem;">
+                        <svg style="margin-right:8px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Secure Logout
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1>Automated Statistics Engine</h1>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    Admin Panel / Automated Stats
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1">
+                <div class="admin-card" style="border-top: 4px solid var(--accent-gold); text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚙️</div>
+                    <h2 style="color: var(--accent-gold);">Stats are now 100% Automated!</h2>
+                    <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem auto; line-height: 1.6;">
+                        You no longer need to manually manage the Orange Cap and Purple Cap arrays. 
+                        The stats tracking engine has been heavily upgraded to automatically scan 
+                        through your saved <strong>Squad Rosters</strong>.
+                    </p>
+                    <p style="color: white; margin-bottom: 2rem;">
+                        It actively calculates and generates 12 advanced leaderboards:<br>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Most Runs, Most Wickets, Highest Score, Best Bowling, Sixes, Fours, Fastest 50s, Best Average...</span>
+                    </p>
+                    <a href="teams.html" class="btn btn-primary" style="display:inline-block; padding: 0.8rem 2rem;">Go to Manage Squads</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/store.js"></script>
+    <script>
+        Store.requireAuth();
+    </script>
+</body>
+</html>

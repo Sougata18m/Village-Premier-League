@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - Village Premier League</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">VPL</a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="teams.html">Teams</a>
+            <a href="fixtures.html">Fixtures</a>
+            <a href="points.html">Points Table</a>
+            <a href="stats.html" class="active">Stats</a>
+            <a href="admin/index.html" class="admin-link">Admin login</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Tournament Statistics</h1>
+        <p class="subtitle">Top performers of the Village Premier League.</p>
+        
+        <div class="grid grid-cols-2" id="stats-container" style="gap: 2rem;">
+            <!-- Rendered beautifully via JS -->
+        </div>
+    </main>
+
+    <style>
+        .stats-card {
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: default;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(8px);
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .stats-card .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 900;
+        }
+        .stats-card h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: white;
+        }
+        .view-table-btn {
+            display: inline-block;
+            padding: 0.6rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            background: transparent;
+        }
+        .view-table-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Modal */
+        .stats-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .stats-modal {
+            background: var(--secondary-blue);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .stats-modal .close-btn {
+            position: absolute;
+            top: 1rem; right: 1.2rem;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .stats-modal .close-btn:hover { color: white; }
+        .stats-modal h2 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.5rem;
+        }
+    </style>
+
+    <script src="js/store.js"></script>
+    <script>
+
+        const activeYear = Store.getActiveYear();
+        const teams = Store.getTeams();
+        
+        // 1. Flatten all active players
+        let allPlayers = [];
+        teams.forEach(team => {
+            const squads = team.squads || {};
+            const activeSquad = squads[activeYear] || [];
+            activeSquad.forEach(player => {
+                if(typeof player === 'object') {
+                    player.teamCode = team.shortName;
+                    allPlayers.push(player);
+                }
+            });
+        });
+
+        // 2. Categories
+        const categories = [
+            { id: 'most-runs', title: 'Most Runs', field: 'runs', color: 'var(--accent-gold)', colorHex: '#fbbf24', badge: 'Orange Cap', icon: '🏏' },
+            { id: 'most-wkts', title: 'Most Wickets', field: 'wickets', color: '#a855f7', colorHex: '#a855f7', badge: 'Purple Cap', icon: '🎯' },
+            { id: 'highest-score', title: 'Highest Score', field: 'highestScore', color: '#3b82f6', colorHex: '#3b82f6', icon: '💯',
+                customSort: (a,b) => (parseInt(b.highestScore) || 0) - (parseInt(a.highestScore) || 0) },
+            { id: 'best-bowl', title: 'Best Bowling', field: 'bestBowling', color: '#10b981', colorHex: '#10b981', icon: '🔥',
+                customSort: (a,b) => {
+                    const parse = (s) => { const p=(s||'0/0').split('/'); return p.length===2 ? [parseInt(p[0])||0, parseInt(p[1])||0] : [0,0]; };
+                    const aa = parse(a.bestBowling); const bb = parse(b.bestBowling);
+                    if(aa[0] !== bb[0]) return bb[0] - aa[0];
+                    return aa[1] - bb[1];
+                }
+            },
+            { id: 'most-6s', title: 'Most Sixes', field: 'totalSixes', color: '#ef4444', colorHex: '#ef4444', icon: '6️⃣' },
+            { id: 'most-4s', title: 'Most Fours', field: 'totalFours', color: '#f59e0b', colorHex: '#f59e0b', icon: '4️⃣' },
+            { id: 'fast-50', title: 'Fastest Fifty', field: 'fastestFifty', color: '#06b6d4', colorHex: '#06b6d4', icon: '⚡', asc: true, excludeZero: true, suffix: ' balls' },
+            { id: 'fast-100', title: 'Fastest Hundred', field: 'fastestHundred', color: '#ec4899', colorHex: '#ec4899', icon: '⚡', asc: true, excludeZero: true, suffix: ' balls' },
+            { id: 'best-avg', title: 'Best Average', field: 'average', color: '#f97316', colorHex: '#f97316', icon: '📊' },
+            { id: 'best-sr', title: 'Best Strike Rate', field: 'strikeRate', color: '#8b5cf6', colorHex: '#8b5cf6', icon: '⚡' },
+            { id: 'best-econ', title: 'Best Economy', field: 'economy', color: '#84cc16', colorHex: '#84cc16', icon: '📉', asc: true, excludeZero: true }
+        ];
+
+        // 3. Sort helper
+        function getSortedPlayers(cat) {
+            let sorted = [...allPlayers];
+            if (cat.customSort) {
+                sorted = sorted.sort(cat.customSort);
+            } else {
+                sorted = sorted.sort((a, b) => {
+                    let valA = a[cat.field] || 0;
+                    let valB = b[cat.field] || 0;
+                    if (cat.asc) return valA - valB;
+                    return valB - valA;
+                });
+            }
+            if (cat.excludeZero) {
+                sorted = sorted.filter(p => p[cat.field] && p[cat.field] !== 0 && p[cat.field] !== "0/0" && p[cat.field] !== "0");
+            } else {
+                sorted = sorted.filter(p => {
+                    const v = p[cat.field];
+                    if(cat.field === 'highestScore' && (!v || parseInt(v) === 0)) return false;
+                    if(cat.field === 'bestBowling' && (!v || v.startsWith('0/'))) return false;
+                    if(v === undefined || v === null || v === 0) return false;
+                    return true;
+                });
+            }
+            return sorted;
+        }
+
+        // 4. Render cards (just title + badge + button)
+        const container = document.getElementById('stats-container');
+        
+        container.innerHTML = categories.map(cat => `
+            <div class="stats-card" style="border-top: 4px solid ${cat.color};">
+                <div class="card-icon" style="background: ${cat.color}22; color: ${cat.color};">${cat.icon}</div>
+                <h2>${cat.title}</h2>
+                ${cat.badge ? `<span class="badge" style="background: ${cat.color}; color: ${cat.color === 'var(--accent-gold)' ? 'var(--primary-blue)' : 'white'}">${cat.badge}</span>` : ''}
+                <button class="view-table-btn" style="border-color: ${cat.color}; color: ${cat.color};" onclick="openStatsModal('${cat.id}')" onmouseover="this.style.background='${cat.colorHex}'; this.style.color='${cat.color === 'var(--accent-gold)' ? 'var(--primary-blue)' : 'white'}'" onmouseout="this.style.background='transparent'; this.style.color='${cat.colorHex}'">View Table</button>
+            </div>
+        `).join('');
+
+        // 5. Modal
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'stats-modal-overlay';
+        modalOverlay.id = 'stats-modal-overlay';
+        modalOverlay.innerHTML = `
+            <div class="stats-modal">
+                <button class="close-btn" onclick="closeStatsModal()">&times;</button>
+                <h2 id="stats-modal-title" style="color: var(--accent-gold);"></h2>
+                <table style="width:100%; margin-top:0;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th style="text-align:right;">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-modal-body"></tbody>
+                </table>
+            </div>
+        `;
+        document.body.appendChild(modalOverlay);
+
+        // Close on overlay click
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeStatsModal();
+        });
+
+        window.openStatsModal = (catId) => {
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+
+            const sorted = getSortedPlayers(cat);
+
+            document.getElementById('stats-modal-title').innerText = cat.title;
+            document.getElementById('stats-modal-title').style.color = cat.colorHex || cat.color;
+
+            const tbody = document.getElementById('stats-modal-body');
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:2rem;">No data available</td></tr>';
+            } else {
+                tbody.innerHTML = sorted.map((p, i) => `
+                    <tr style="${i === 0 ? 'background: ' + (cat.colorHex || cat.color) + '15;' : ''}">
+                        <td style="font-weight: 700; color: ${i === 0 ? (cat.colorHex || cat.color) : 'var(--text-muted)'};">${i === 0 ? '👑' : (i + 1)}</td>
+                        <td style="font-weight: 600; display:flex; align-items:center; gap:0.6rem;">
+                            ${p.image ? `<img src="${p.image}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid ${cat.colorHex || cat.color};">` : `<div style="width:30px; height:30px; border-radius:50%; background:var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:0.6rem; border:1px solid ${cat.colorHex || cat.color};">👤</div>`}
+                            ${p.name}
+                        </td>
+                        <td style="color: var(--text-muted);">${p.teamCode}</td>
+                        <td style="text-align:right; font-weight: 800; color: white; font-size: 1.1rem;">
+                            ${p[cat.field]}${cat.suffix || ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('stats-modal-overlay').style.display = 'flex';
+        };
+
+        window.closeStatsModal = () => {
+            document.getElementById('stats-modal-overlay').style.display = 'none';
+        };
+
+    </script>
+</body>
+</html>
+

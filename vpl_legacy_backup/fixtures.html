@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixtures & Results - Village Premier League</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">VPL</a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="teams.html">Teams</a>
+            <a href="fixtures.html" class="active">Fixtures</a>
+            <a href="points.html">Points Table</a>
+            <a href="stats.html">Stats</a>
+            <a href="admin/index.html" class="admin-link">Admin login</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Fixtures & Results</h1>
+        <p class="subtitle">Match schedules and latest results.</p>
+        
+        <div class="grid" id="fixtures-list">
+            <!-- Rendered via JS -->
+        </div>
+    </main>
+
+    <!-- Scorecard Modal Overlay -->
+    <div id="scorecard-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 2rem; flex-direction: column;">
+        <div style="position: relative; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center;">
+            <button onclick="closePhoto()" style="position: absolute; top: -40px; right: 0; background: transparent; color: white; border: none; font-size: 2rem; cursor: pointer;">&times;</button>
+            <img id="scorecard-image" src="" style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script>
+
+        const matches = Store.getMatches();
+        const teams = Store.getTeams();
+        const list = document.getElementById('fixtures-list');
+
+        const getTeamDetails = (id) => {
+            const t = teams.find(t => t.id === id);
+            return t || { name: 'TBD', primaryColor: 'var(--text-muted)', logo: null };
+        };
+
+        window.openPhoto = (photoBase64) => {
+            if (!photoBase64) return;
+            document.getElementById('scorecard-image').src = photoBase64;
+            document.getElementById('scorecard-modal').style.display = 'flex';
+        };
+
+        window.closePhoto = () => {
+            document.getElementById('scorecard-modal').style.display = 'none';
+            document.getElementById('scorecard-image').src = '';
+        };
+
+        if (matches.length > 0) {
+            list.innerHTML = matches.map(m => {
+                const teamA = getTeamDetails(m.teamA);
+                const teamB = getTeamDetails(m.teamB);
+
+                let statusBadge = '';
+                if(m.status === 'live') statusBadge = '<span class="badge badge-live">Live</span>';
+                else if (m.status === 'upcoming') statusBadge = '<span class="badge badge-upcoming">Upcoming</span>';
+                else statusBadge = '<span class="badge badge-completed">Completed</span>';
+
+                let resultsHTML = '';
+                if(m.status !== 'upcoming') {
+                    resultsHTML = `
+                    <div style="background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 12px; margin-top: 1.5rem; text-align:center; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
+                         <div style="position: absolute; top:0; left:0; right:0; height: 2px; background: linear-gradient(90deg, ${teamA.primaryColor} 0%, ${teamB.primaryColor} 100%);"></div>
+                        ${m.resultText ? `<p style="color: white; font-weight: 700; font-size: 1.2rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${m.resultText}</p>` : '<p style="color: var(--text-muted); margin: 0;">Result pending...</p>'}
+                        ${m.photoUrl ? `<p style="color: var(--accent-gold); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0; letter-spacing: 1px;">(CLICK TO VIEW SCORECARD)</p>` : ''}
+                    </div>
+                    `;
+                }
+
+                return `
+                <div class="card" ${m.photoUrl ? `onclick="openPhoto('${m.photoUrl}')"` : ''} style="${m.photoUrl ? 'cursor: pointer; ' : ''} margin-bottom: 1.5rem; transition: all 0.3s ease-in-out; border-left: 5px solid ${teamA.primaryColor}; border-right: 5px solid ${teamB.primaryColor};" onmouseover="this.style.transform='${m.photoUrl ? 'translateY(-5px)' : 'none'}'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.5)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);"><b style="color:white">#${m.matchNumber || m.id.replace('m','')}</b> • ${m.date} • ${m.venue}</span>
+                        ${statusBadge}
+                    </div>
+                    
+                    <div style="display:flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                        <!-- Team A -->
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 0.5rem; text-align:center;">
+                            ${teamA.logo ? `<img src="${teamA.logo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid ${teamA.primaryColor};">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: ${teamA.primaryColor}; color: white; display:flex; align-items:center; justify-content:center; font-weight: 800; font-size: 1.2rem;">${teamA.shortName || 'TBD'}</div>`}
+                            <span style="font-size: 1.2rem; font-weight: 900; color: ${teamA.primaryColor}; text-transform: uppercase;">${teamA.name}</span>
+                        </div>
+
+                        <!-- VS Badge -->
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                             <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, ${teamA.primaryColor} 0%, ${teamB.primaryColor} 100%); display:flex; align-items:center; justify-content:center; font-weight: 900; font-size: 0.8rem; border: 2px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 10;">VS</div>
+                        </div>
+
+                        <!-- Team B -->
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap: 0.5rem; text-align:center;">
+                            ${teamB.logo ? `<img src="${teamB.logo}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid ${teamB.primaryColor};">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: ${teamB.primaryColor}; color: white; display:flex; align-items:center; justify-content:center; font-weight: 800; font-size: 1.2rem;">${teamB.shortName || 'TBD'}</div>`}
+                            <span style="font-size: 1.2rem; font-weight: 900; color: ${teamB.primaryColor}; text-transform: uppercase;">${teamB.name}</span>
+                        </div>
+                    </div>
+
+                    ${resultsHTML}
+                </div>
+                `;
+            }).join('');
+        } else {
+            list.innerHTML = '<p>No matches scheduled yet.</p>';
+        }
+    </script>
+</body>
+</html>

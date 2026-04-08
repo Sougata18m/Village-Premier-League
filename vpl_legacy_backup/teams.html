@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams - Village Premier League</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">VPL</a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="teams.html" class="active">Teams</a>
+            <a href="fixtures.html">Fixtures</a>
+            <a href="points.html">Points Table</a>
+            <a href="stats.html">Stats</a>
+            <a href="admin/index.html" class="admin-link">Admin login</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Franchises</h1>
+        <p class="subtitle">Meet the teams competing for the VPL title.</p>
+        
+        <div class="grid grid-cols-2" id="teams-grid">
+            <!-- Rendered via JS -->
+        </div>
+    </main>
+
+    <!-- Public Squad Modal Overlay -->
+    <div id="squad-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="card" style="width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button onclick="closeSquad()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; color: var(--text-muted); border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 id="squad-title" style="color: var(--accent-gold); margin-top:0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 1rem;">Squad</h2>
+            <div id="squad-list" style="display:flex; flex-direction:column; gap: 0.5rem; max-height: 50vh; overflow-y: auto; text-align: left;">
+                <!-- Filled via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script>
+
+        const teams = Store.getTeams();
+        const grid = document.getElementById('teams-grid');
+        const activeYear = Store.getActiveYear();
+
+        window.openSquad = (teamId) => {
+            const team = teams.find(t => t.id === teamId);
+            if(!team) return;
+            
+            const squads = team.squads || {};
+            const activeSquad = squads[activeYear] || team.players || [];
+            
+            document.getElementById('squad-title').innerText = `${team.name} (${activeYear})`;
+            
+            const list = document.getElementById('squad-list');
+            if (activeSquad.length > 0) {
+                list.innerHTML = activeSquad.map(p => {
+                    // Gracefully fallback legacy string data to new object definition
+                    const obj = typeof p === 'string' ? { name: p, runs:0, wickets:0, strikeRate:0, economy:0, fifties:0, hundreds:0, highestScore:'0', bestBowling:'0/0', image:null } : p;
+                    return `
+                    <div style="background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display:flex; align-items:center; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem;">
+                            ${obj.image ? `<img src="${obj.image}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-gold);">` : `<div style="width:60px; height:60px; border-radius:50%; background:var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:2px solid var(--accent-gold);">👤</div>`}
+                            <div>
+                                <h3 style="margin:0; color:white; font-size:1.2rem;">${obj.name}</h3>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">Roster Profile</span>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; text-align:center;">
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Runs</div><strong style="color:var(--accent-gold); font-size:1.1rem;">${obj.runs}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Wkts</div><strong style="color:#a855f7; font-size:1.1rem;">${obj.wickets}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">S/R</div><strong style="color:white; font-size:0.9rem;">${obj.strikeRate}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Econ</div><strong style="color:white; font-size:0.9rem;">${obj.economy}</strong></div>
+                            
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">HS</div><strong style="color:white; font-size:0.9rem;">${obj.highestScore}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">BBI</div><strong style="color:white; font-size:0.9rem;">${obj.bestBowling}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">50s</div><strong style="color:white; font-size:0.9rem;">${obj.fifties}</strong></div>
+                            <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px;"><div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">100s</div><strong style="color:white; font-size:0.9rem;">${obj.hundreds}</strong></div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align:center;">No squad data found for this season.</p>';
+            }
+            
+            document.getElementById('squad-modal').style.display = 'flex';
+        };
+
+        window.closeSquad = () => {
+            document.getElementById('squad-modal').style.display = 'none';
+        };
+
+        if (teams.length > 0) {
+            grid.innerHTML = teams.map(t => {
+                const squads = t.squads || {};
+                const activeSquad = squads[activeYear] || t.players || [];
+                const primary = t.primaryColor || '#D4AF37';
+                const secondary = t.secondaryColor || '#1A1A1A';
+                
+                return `
+                <div class="card" style="display:flex; flex-direction:column; align-items:center; text-align:center; border-top: 5px solid ${primary}; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, ${secondary}22 100%); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: ${primary}11; border-radius: 50%;"></div>
+                    
+                    ${t.logo ? 
+                        `<div style="width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid ${primary}; margin-bottom: 1.2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.4); background: ${secondary};"><img src="${t.logo}" style="width: 100%; height: 100%; object-fit: cover;"></div>` :
+                        `<div style="width: 90px; height: 90px; border-radius: 50%; background: ${primary}; display:flex; align-items:center; justify-content:center; font-size: 2.2rem; font-weight: 800; color: ${secondary}; margin-bottom: 1.2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);">${t.shortName}</div>`
+                    }
+                    <h2 style="margin-bottom: 0.3rem;">${t.name}</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem; letter-spacing: 1px;">SQUAD SIZE: ${activeSquad.length}</p>
+                    <button class="btn" style="width:100%; background: ${primary}; color: ${secondary}; font-weight: 800; border: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openSquad('${t.id}')">Explore Squad</button>
+                </div>
+                `;
+            }).join('');
+        } else {
+            grid.innerHTML = '<p>No teams available.</p>';
+        }
+    </script>
+</body>
+</html>
